@@ -40,7 +40,7 @@ SSDFile::SSDFile(const QString& file_name)
     });
 
     data.clear();
-    data.reserve(500000); // speed up
+    data.reserve(5000000); // speed up
     std::ranges::copy(range.begin(), range.end(), std::back_inserter(data));
     if (size==0) {
         throw Error("No data in file!");
