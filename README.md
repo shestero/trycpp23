@@ -57,7 +57,14 @@ Samples of files are in SamplesFiles folder of the Test Task archive
 2. Should be implemented using С++.
 3. It is allowed to use third party libraries for building UI (Qt, MFC, etc), except special components for rendering and visualizing graphs/plots.
 
-**This source was compiled for MS Windows with**
+**This project was compiled under**
+
+***MS Windows 7*** using
 
 * Qt 5.12.12 (qt-opensource-windows-x86-5.12.12.exe)
 * C++23 (xpack-mingw-w64-gcc-13.2.0-1-win32-x64.zip)
+
+***Debian 12.4.0*** using
+
+* Qt 6.4.2 (system package)
+* C++23 (GCC 13.2.0 built from sources)
