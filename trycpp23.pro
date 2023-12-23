@@ -3,7 +3,7 @@ QT       += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 # https://github.com/xpack-dev-tools/mingw-w64-gcc-xpack/releases/download/v13.2.0-1/xpack-mingw-w64-gcc-13.2.0-1-win32-x64.zip
-QMAKE_CXX=\xpack-mingw-w64-gcc-13.2.0-1\bin\x86_64-w64-mingw32-g++.exe
+# QMAKE_CXX=\xpack-mingw-w64-gcc-13.2.0-1\bin\x86_64-w64-mingw32-g++.exe
 QMAKE_CXXFLAGS += -std=c++23
 CONFIG += -std=c++23
 
