@@ -9,7 +9,7 @@ class SSDFileHeader
 public:
     SSDFileHeader(const QString& file_name);
 
-    // header fiekds
+    // header fields
     std::string org_app_ver;
     std::string mes_type;
     std::string date_and_time;
