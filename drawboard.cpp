@@ -62,48 +62,19 @@ void DrawingBoard::paintEvent(QPaintEvent *)
 
     // drawing area
     QRect graphic = rect();
+    if (!graphic.isValid() || graphic.isEmpty())
+        return;
     graphic.adjust(margin, margin+text_height+half_margin, -margin, -margin);
     painter.drawRect(graphic);
     graphic.adjust(1,1,-1,-1);
-    if (!graphic.isValid() || graphic.isEmpty())
-        return;
 
-    // Draw header information
-    painter.drawText(QRectF(graphic), Qt::AlignLeft|Qt::AlignTop,
-                     file->header.mes_type.c_str());
-    painter.drawText(QRectF(graphic), Qt::AlignRight|Qt::AlignTop,
-                     file->header.date_and_time.c_str());
-    painter.drawText(QRectF(graphic), Qt::AlignRight|Qt::AlignBottom,
-                     QString("Size: %1 data lines.").arg(file->data.size()));
-    painter.drawText(QRectF(graphic), Qt::AlignLeft|Qt::AlignBottom,
-                     QString::fromLocal8Bit(file->header.other.c_str())
-                     );
-    QFont bold = font;
-    bold.setBold(true);
-    bold.setUnderline(true);
-    painter.setFont(bold);
-    painter.drawText(QRectF(graphic), Qt::AlignHCenter|Qt::AlignTop,
-                     QString("\n")+file->header.org_app_ver.c_str());
-    painter.setFont(font);
+    paintInfo(painter, graphic);
 
-    graphic.adjust(margin+left_header, text_height*3, -margin, -text_height*5);
+    graphic.adjust(margin+left_header, text_height*4, -margin, -text_height*7);
 
     // Calculation of coefficients
     const double tdelta = file->tmax - file->tmin;
     const double vdelta = file->vmax - file->vmin;
-    if (tdelta<=0) {
-        return; // throw Error("tmax should be > tmin!");
-    }
-    if (vdelta<=0) {
-        return; // throw Error("vmax should be > vmin!");
-    }
-
-    // log10 for grids:
-    int t10 = trunc(log10(tdelta));
-    int v10 = trunc(log10(vdelta));
-    int tmax10 = ceil(log10(file->tmax)); // assume tmax>0
-    int vmax10 = ceil(log10(std::max(fabs(file->vmin),fabs(file->vmax))));
-
     const double kt = (graphic.right()-graphic.left())/tdelta; // >0
     const double kv = (graphic.top()-graphic.bottom())/vdelta; // <0
 
@@ -116,6 +87,43 @@ void DrawingBoard::paintEvent(QPaintEvent *)
         [&](const double& v) -> int {
                 return graphic.bottom() + ceil(kv*(v - file->vmin));
         };
+
+    paintGrid(painter, graphic, tdelta, vdelta, convt, convv);
+    paintGrph(painter, convt, convv);
+}
+
+void DrawingBoard::paintInfo(QPainter& painter, QRect& graphic)
+{
+    // Draw header information
+    painter.drawText(QRectF(graphic), Qt::AlignLeft|Qt::AlignTop,
+                     file->header.mes_type.c_str());
+    painter.drawText(QRectF(graphic), Qt::AlignRight|Qt::AlignTop,
+                     file->header.date_and_time.c_str());
+    painter.drawText(QRectF(graphic), Qt::AlignRight|Qt::AlignBottom,
+                     QString("Size: %1 data lines.").arg(file->size()));
+    painter.drawText(QRectF(graphic), Qt::AlignLeft|Qt::AlignBottom,
+                     QString::fromLocal8Bit(file->header.other.c_str())
+                     );
+    QFont bold = font;
+    bold.setBold(true);
+    bold.setUnderline(true);
+    painter.setFont(bold);
+    painter.drawText(QRectF(graphic), Qt::AlignHCenter|Qt::AlignTop,
+                     QString("\n")+file->header.org_app_ver.c_str());
+    painter.setFont(font);
+}
+
+void DrawingBoard::paintGrid(
+        QPainter& painter, QRect& graphic,
+        const double tdelta, const double vdelta,
+        auto convt, auto convv
+    )
+{
+    // log10 for grids:
+    int t10 = trunc(log10(tdelta));
+    int v10 = trunc(log10(vdelta));
+    int tmax10 = ceil(log10(file->tmax)); // assume tmax>0
+    int vmax10 = ceil(log10(std::max(fabs(file->vmin),fabs(file->vmax))));
 
     // Drawing the grid
     painter.setPen(grid_color);
@@ -144,18 +152,24 @@ void DrawingBoard::paintEvent(QPaintEvent *)
     painter.drawLine(graphic.left(), j, graphic.right(), j);
 
     painter.setPen(plot_color);
+}
 
-    // points are chunked by the X screen coordinates
-    auto view = file->range()
+void DrawingBoard::paintGrph(
+        QPainter& painter,
+        auto convt, auto convv
+    )
+{
+    auto view =     // points are chunked by the X screen coordinates
+        file->range()
             | std::views::transform([convt, convv](const auto& op) ->
                 std::optional<std::pair<int,int>>
                 {
                     return
                         op.transform([convt, convv](const auto& p) {
-                            const double t = p.first;
-                            const double v = p.second;
-                            return std::make_pair(convt(t),convv(v));
-                        });
+                        const double t = p.first;
+                        const double v = p.second;
+                        return std::make_pair(convt(t),convv(v));
+                    });
                 })
             | std::views::chunk_by([](auto const& op1, auto const& op2) {
                 return op1.has_value() && op2.has_value() && op1->first==op2->first;
@@ -193,3 +207,4 @@ void DrawingBoard::paintEvent(QPaintEvent *)
             prev.reset();
     }
 }
+

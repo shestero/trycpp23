@@ -13,6 +13,7 @@ SSDFile::SSDFile(const QString& file_name)
 {
     FileReader reader(file_name);
     std::optional<double> tlast; // used only to check t order
+    std::optional<double> tmin, tmax, vmin, vmax;
     size_t size = 0;
     double t=0, v=0;
     char* end;
@@ -36,17 +37,27 @@ SSDFile::SSDFile(const QString& file_name)
         }
         tlast = t;
         size++;
+
+        if (!tmin.has_value()||*tmin>t) tmin.emplace(t);
+        if (!tmax.has_value()||*tmax<t) tmax.emplace(t);
+        if (!vmin.has_value()||*vmin>v) vmin.emplace(v);
+        if (!vmax.has_value()||*vmax<v) vmax.emplace(v);
+
         return std::optional(std::pair(t, v));
     });
 
     data.clear();
     data.reserve(5000000); // speed up
     std::ranges::copy(range.begin(), range.end(), std::back_inserter(data));
-    if (size==0) {
+    if (size==0||
+        !tmin.has_value()||!tmax.has_value()||
+        !vmin.has_value()||!vmax.has_value())
+    {
         throw Error("No data in file!");
     }
 
-    // find min and max of t and v
+    // alternative way to find min and max of t and v:
+    /*
     auto flatten = this->range()
             | std::views::filter([](auto const &op) { return op.has_value(); });
     auto ranget = flatten
@@ -55,6 +66,7 @@ SSDFile::SSDFile(const QString& file_name)
             | std::views::transform([](auto const &op) { return op->second; });
     auto [tmin, tmax] = std::minmax_element(ranget.begin(), ranget.end());
     auto [vmin, vmax] = std::minmax_element(rangev.begin(), rangev.end());
+    */
     this->tmin = *tmin;
     this->tmax = *tmax;
     this->vmin = *vmin;

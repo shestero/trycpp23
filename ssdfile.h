@@ -20,15 +20,22 @@ public:
 
     const QString   file_name;
 
-    std::vector<std::optional<std::pair<double, double>>> data;
     auto range() {
         return std::ranges::subrange(data.cbegin(), data.cend());
+    }
+    size_t size() {
+        return data.size();
     }
 
     SSDFileHeader   header;
 
     double tmin, tmax;
     double vmin, vmax;
+
+private:
+    std::vector<std::optional<std::pair<double, double>>> data;
+    // empty optional means gape.
+
 };
 
 #endif // SSDFILE_H
