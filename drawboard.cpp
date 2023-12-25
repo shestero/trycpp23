@@ -208,9 +208,9 @@ void DrawingBoard::paintGrph(
         // store connection between chunks
         const std::optional<std::pair<int,int>>& last = *(--subop.cend());
         if (last.has_value())
-            prev.emplace(*last);
+            prev.emplace(*last); // normal plot
         else
-            prev.reset();
+            prev.reset(); // gape
     }
 }
 
