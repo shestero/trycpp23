@@ -127,6 +127,7 @@ void DrawingBoard::paintGrid(
 
     // Drawing the grid
     painter.setPen(grid_color);
+
     // vertical grid
     double dt = pow(10, t10-1);
     for (double t = pow(10, tmax10); t > file->tmin; t-=dt) {
@@ -138,6 +139,7 @@ void DrawingBoard::paintGrid(
     }
     const int i = convt(file->tmin);
     painter.drawLine(i, graphic.top(), i, graphic.bottom());
+
     // horizontal grid
     double dv = pow(10, v10-1);
     // Note: some assumption here that vmax is positive
@@ -180,15 +182,18 @@ void DrawingBoard::paintGrph(
         auto sub = subop
             | std::views::filter([](auto const &op) { return op.has_value(); })
             | std::views::transform([](auto const &op) { return *op; });
+
         // draw point marks (may be switched off here)
         for (const auto& p : sub) {
             painter.drawEllipse(QPointF(p.first, p.second), 1.5, 1.5);
         }
+
         // draw a compound vertical segment that contain several points with the same X on screen
         if (subop.size()>1||!sub.empty()) {
             auto [bottom, top] = std::minmax_element(sub.begin(), sub.end());
             painter.drawLine((*bottom).first, (*bottom).second, (*top).first, (*top).second);
         }
+
         // draw a "normal" segment
         if (prev.has_value()) {
             const std::optional<std::pair<int,int>>& first = *(subop.cbegin());
@@ -199,6 +204,7 @@ void DrawingBoard::paintGrph(
                 );
             }
         }
+
         // store connection between chunks
         const std::optional<std::pair<int,int>>& last = *(--subop.cend());
         if (last.has_value())

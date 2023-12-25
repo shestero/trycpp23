@@ -48,7 +48,3 @@ MainWindow::MainWindow(QWidget *parent)
     statusBar->showMessage("Please select SSD file ...");
 }
 
-MainWindow::~MainWindow()
-{
-}
-
