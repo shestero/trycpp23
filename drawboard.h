@@ -23,8 +23,9 @@ private:
     void paintGrph(QPainter& painter,
                    auto convt, auto convv);
 
-    std::optional <SSDFile> file;
     QFont font;
+
+    std::optional <SSDFile> file;
 
 public slots:
     void setFile(const QString& file_name);
